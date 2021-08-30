@@ -1,0 +1,23 @@
+{
+   "background": {
+      "service_worker": "background.js"
+   },
+   "description": "Autoplay and skip",
+   "manifest_version": 2,
+   "name": "Sovetromantica Extension",
+   "version": "0.1",
+   "content_security_policy":
+   "script-src 'self' 'unsafe-eval'; object-src 'self'"
+   ,
+   "content_scripts": [
+      {
+         "matches": [
+            "https://sovetromantica.com/anime/*"
+         ],
+         "js": [
+            "content.js"
+         ]
+      }
+   ]
+
+}
