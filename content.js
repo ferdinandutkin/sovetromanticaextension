@@ -3,7 +3,7 @@ console.log("романтично")
 
 
 
-
+//TODO:: добавить включение-отключение. что-то сделать с фуллскрином
 const to_inject = () => {
     console.log(window);
     console.log(player);
@@ -27,7 +27,6 @@ const to_inject = () => {
 
 
         player.api("volume", volume)
-
 
 
         if (is_fullscreen) {
@@ -68,7 +67,7 @@ const to_inject = () => {
 
         goNext();
     }
-    function onTimeUpdate() {
+    function tick() {
 
         let curTime = player.api('time');
 
@@ -84,7 +83,7 @@ const to_inject = () => {
 
 
     start();
-    document.getElementById("sovetromantica_player").addEventListener("time",  onTimeUpdate);
+    document.getElementById("sovetromantica_player").addEventListener("time",  tick);
 
 }
 
@@ -93,9 +92,10 @@ const to_iif = f => `(${f.toString()})()`
 
 document.addEventListener("DOMContentLoaded", function(event) {
     const injection_string = to_iif(to_inject);
+
     const script = document.createElement("script");
 
     script.textContent = injection_string;
-    (document.head).appendChild(script);
+    document.head.appendChild(script);
 });
 
