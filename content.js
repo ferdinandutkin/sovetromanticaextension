@@ -3,14 +3,64 @@ console.log("романтично")
 
 
 
-//TODO:: добавить включение-отключение. что-то сделать с фуллскрином
-const to_inject = () => {
-    console.log(window);
-    console.log(player);
+//TODO:: что-то сделать с фуллскрином
+const to_inject = settings => {
 
 
+    const { skip_intro, autoplay_next} = settings;
 
-    function start() {
+    console.log(settings);
+
+    class api_wrapper {
+        #wrapped
+        constructor() {
+            this.#wrapped = player;
+        }
+
+        get is_fullscreen() {
+            return this.#wrapped.api("isfullscreen");
+        }
+
+        set is_fullscreen(val) {
+            if (val === true) {
+                this.#wrapped.api("fullscreen");
+            }
+            else if (val === false) {
+                this.#wrapped.api("exitfullscreen");
+            }
+
+        }
+
+        get volume() {
+            return this.#wrapped.api("volume");
+        }
+
+        set volume(val) {
+            this.#wrapped.api("volume", val);
+        }
+
+        play() {
+            this.#wrapped.api("play");
+        }
+
+        get current_time() {
+            return this.#wrapped.api('time')
+        }
+
+        set current_time(val) {
+            this.#wrapped.api("seek", val);
+        }
+
+        go_next() {
+            goNext();
+        }
+
+
+    }
+
+    const wrapper = new api_wrapper();
+
+    const start = () => {
 
         const resume_data_serialized =  localStorage.getItem("resume_data");
 
@@ -26,32 +76,27 @@ const to_inject = () => {
         const is_fullscreen = resume_data?.is_fullscreen ?? false;
 
 
-        player.api("volume", volume)
+        wrapper.volume = volume;
+
+        wrapper.is_fullscreen = is_fullscreen;
 
 
-        if (is_fullscreen) {
-
-
-            player.api("fullscreen");
-
-
+        if (skip_intro) {
+            wrapper.current_time = 33.2;
         }
 
 
+        wrapper.play();
 
-        player.api("seek", 33);
-
-
-        player.api("play")
 
     }
 
 
 
 
-    function next() {
-        const is_fullscreen = player.api("isfullscreen");
-        const volume = player.api("volume");
+    const next = () => {
+        const is_fullscreen = wrapper.is_fullscreen;
+        const volume = wrapper.volume;
 
         const resume_data = {
             is_fullscreen,
@@ -62,23 +107,18 @@ const to_inject = () => {
         const resume_data_serialized = JSON.stringify(resume_data)
 
         localStorage.setItem("resume_data", resume_data_serialized)
+        wrapper.go_next();
 
-
-
-        goNext();
     }
-    function tick() {
 
-        let curTime = player.api('time');
-
-        if (curTime >= skips[1].start) {
-            next()
-
-
+    const tick = () => {
+        const time = wrapper.current_time;
+        if (time >= skips[1].start) {
+            if (autoplay_next) {
+                next();
+            }
 
         }
-
-
     }
 
 
@@ -88,14 +128,38 @@ const to_inject = () => {
 }
 
 
-const to_iif = f => `(${f.toString()})()`
+const to_iif = (func, ...args) => `(${func.toString()}).apply(null, ${JSON.stringify(args)})`
 
-document.addEventListener("DOMContentLoaded", function(event) {
-    const injection_string = to_iif(to_inject);
 
-    const script = document.createElement("script");
+let settings = {
+    skip_intro: undefined,
+    autoplay_next : undefined
+}
 
-    script.textContent = injection_string;
-    document.head.appendChild(script);
-});
+
+  chrome.storage.sync.get("skip_intro", result => {
+     settings.skip_intro = result.skip_intro ?? true;
+
+      chrome.storage.sync.get("autoplay_next", result => {
+          settings.autoplay_next = result.autoplay_next ?? true;
+
+
+          document.addEventListener("DOMContentLoaded", () => {
+              const injection_string = to_iif(to_inject, settings);
+
+              const script = document.createElement("script");
+
+              script.textContent = injection_string;
+              document.head.appendChild(script);
+          });
+
+      } );
+
+
+  } );
+
+
+
+
+
 
