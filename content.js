@@ -7,7 +7,7 @@ console.log("романтично")
 const to_inject = settings => {
 
 
-    const { skip_intro, autoplay_next} = settings;
+    const { skip_intro, autoplay_next,skip_opening_with_hotkey, skip_opening_hotkey} = settings;
 
     console.log(settings);
 
@@ -94,6 +94,7 @@ const to_inject = settings => {
 
 
 
+
     const next = () => {
         const is_fullscreen = wrapper.is_fullscreen;
         const volume = wrapper.volume;
@@ -111,19 +112,46 @@ const to_inject = settings => {
 
     }
 
-    const tick = () => {
+    const time_handler = () => {
         const time = wrapper.current_time;
         if (time >= skips[1].start) {
-            if (autoplay_next) {
-                next();
-            }
-
+            next();
         }
     }
 
+    const keydown_handler = ev => {
+        console.log(ev);
+        if (ev.code === "KeyS") {
+
+            console.log("keyS")
+            const time = wrapper.current_time;
+
+            if (time <= skips[0].skip_to) {
+                console.log('skip');
+                wrapper.current_time = skips[0].skip_to;
+            }
+        }
+    }
+
+    const init_listeners = () => {
+        const player_element = document.getElementById("sovetromantica_player");
+
+
+        if (autoplay_next) {
+            player_element.addEventListener("time",  time_handler);
+        }
+
+
+        if (skip_opening_with_hotkey) {
+            document.body.addEventListener("keydown", keydown_handler);
+        }
+
+    }
+
+    init_listeners();
 
     start();
-    document.getElementById("sovetromantica_player").addEventListener("time",  tick);
+
 
 }
 
@@ -133,7 +161,10 @@ const to_iif = (func, ...args) => `(${func.toString()}).apply(null, ${JSON.strin
 
 let settings = {
     skip_intro: undefined,
-    autoplay_next : undefined
+    autoplay_next : undefined,
+
+    skip_opening_with_hotkey : undefined,
+    skip_opening_hotkey : "KeyS"
 }
 
 
@@ -143,6 +174,8 @@ let settings = {
       chrome.storage.sync.get("autoplay_next", result => {
           settings.autoplay_next = result.autoplay_next ?? true;
 
+          chrome.storage.sync.get("skip_opening_with_hotkey", result => {
+              settings.skip_opening_with_hotkey = result.skip_opening_with_hotkey ?? true;
 
           document.addEventListener("DOMContentLoaded", () => {
               const injection_string = to_iif(to_inject, settings);
@@ -151,6 +184,7 @@ let settings = {
 
               script.textContent = injection_string;
               document.head.appendChild(script);
+          });
           });
 
       } );

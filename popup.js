@@ -1,6 +1,8 @@
 
 
 const attach_event_listeners = () => {
+
+
     document.getElementById("skip_intro").addEventListener("change", function () {
         const skip_intro = this.checked;
 
@@ -18,6 +20,16 @@ const attach_event_listeners = () => {
     })
 
 
+    document.getElementById("skip_opening_with_hotkey").addEventListener("change", function () {
+        const skip_opening_with_hotkey = this.checked;
+
+        chrome.storage.sync.set({"skip_opening_with_hotkey": skip_opening_with_hotkey});
+
+
+        console.log(skip_opening_with_hotkey)
+    })
+
+
 
 }
 
@@ -32,6 +44,14 @@ const set_current_values = () => {
             const autoplay_next = result.autoplay_next ?? true;
 
             document.getElementById("autoplay_next").checked = autoplay_next;
+
+            chrome.storage.sync.get("skip_opening_with_hotkey", result => {
+
+                const skip_opening_with_hotkey = result.skip_opening_with_hotkey ?? true;
+
+                document.getElementById("skip_opening_with_hotkey").checked = skip_opening_with_hotkey;
+
+            })
 
         })
     });
