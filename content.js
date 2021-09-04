@@ -1,3 +1,6 @@
+
+
+
 console.log("романтично")
 
 
@@ -8,6 +11,8 @@ const to_inject = settings => {
 
 
     const { skip_intro, autoplay_next,skip_opening_with_hotkey, skip_opening_hotkey} = settings;
+
+
 
     console.log(settings);
 
@@ -168,32 +173,24 @@ let settings = {
 }
 
 
-  chrome.storage.sync.get("skip_intro", result => {
-     settings.skip_intro = result.skip_intro ?? true;
+chrome.storage.sync.get(["skip_intro", "autoplay_next", "skip_opening_with_hotkey"], result => {
 
-      chrome.storage.sync.get("autoplay_next", result => {
-          settings.autoplay_next = result.autoplay_next ?? true;
+    for (let key in result) {
+        settings[key] = result[key] ?? true;
+    }
 
-          chrome.storage.sync.get("skip_opening_with_hotkey", result => {
-              settings.skip_opening_with_hotkey = result.skip_opening_with_hotkey ?? true;
+    console.log('result', result)
 
-          document.addEventListener("DOMContentLoaded", () => {
-              const injection_string = to_iif(to_inject, settings);
+    document.addEventListener("DOMContentLoaded", () => {
+        const injection_string = to_iif(to_inject, settings);
 
-              const script = document.createElement("script");
-
-              script.textContent = injection_string;
-              document.head.appendChild(script);
-          });
-          });
-
-      } );
+        const script = document.createElement("script");
 
 
-  } );
-
-
-
+        script.textContent = injection_string;
+        document.head.appendChild(script);
+    });
+});
 
 
 
