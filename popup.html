@@ -5,6 +5,15 @@
         width: 200px;
 
     }
+
+    @keyframes spin {
+        from {transform:rotate(0deg);}
+        to {transform:rotate(360deg);}
+    }
+
+    .logo {
+        animation: spin 5s linear 0s infinite;
+    }
 </style>
 <head>
     <meta charset="UTF-8">
